@@ -13,6 +13,10 @@ namespace DepremSafe.Data.Repositories
     public class UserLocationRepository:IUserLocationRepository
     {
         private readonly DepremSafeDbContext _context;
+
+
+        //merhaba
+
         public UserLocationRepository(DepremSafeDbContext context) => _context = context;
 
         public async Task<UserLocation> GetByIdAsync(Guid id) =>

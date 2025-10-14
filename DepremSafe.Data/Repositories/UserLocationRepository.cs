@@ -15,7 +15,7 @@ namespace DepremSafe.Data.Repositories
         private readonly DepremSafeDbContext _context;
 
 
-
+        //merhaba
 
         public UserLocationRepository(DepremSafeDbContext context) => _context = context;
 

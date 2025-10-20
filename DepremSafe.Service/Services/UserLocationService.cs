@@ -3,19 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using DepremSafe.Core.DTOs;
 using DepremSafe.Core.Entities;
 using DepremSafe.Core.Interfaces;
+using DepremSafe.Service.Interfaces;
 
 namespace DepremSafe.Service.Services
 {
-    public class UserLocationService
+    public class UserLocationService: IUserLocationService
     {
         private readonly IUserLocationRepository _locationRepository;
-        public UserLocationService(IUserLocationRepository locationRepository) => _locationRepository = locationRepository;
+        private readonly IMapper _mapper;
 
-        public Task<UserLocation> GetByIdAsync(Guid id) => _locationRepository.GetByIdAsync(id);
-        public Task<IEnumerable<UserLocation>> GetByUserIdAsync(Guid userId) => _locationRepository.GetByUserIdAsync(userId);
-        public Task AddAsync(UserLocation location) => _locationRepository.AddAsync(location);
-    
-}
+        public UserLocationService(IUserLocationRepository locationRepository, IMapper mapper)
+        {
+            _locationRepository = locationRepository;
+            _mapper = mapper;
+        }
+      
+        public async Task<UserLocationDTO> GetByIdAsync(Guid id)
+        {
+            var location = await _locationRepository.GetByIdAsync(id);
+            return _mapper.Map<UserLocationDTO>(location);
+        }
+
+        public async Task<IEnumerable<UserLocationDTO>> GetByUserIdAsync(Guid userId)
+        {
+            var locations = await _locationRepository.GetByUserIdAsync(userId);
+            return _mapper.Map<IEnumerable<UserLocationDTO>>(locations);
+        }
+
+        public async Task AddAsync(UserLocationDTO locationDto)
+        {
+            var location = _mapper.Map<UserLocation>(locationDto);
+            await _locationRepository.AddAsync(location);
+        }
+
+
+    }
 }

@@ -1,4 +1,6 @@
-﻿using DepremSafe.Core.Entities;
+﻿using DepremSafe.Core.DTOs;
+using DepremSafe.Core.Entities;
+using DepremSafe.Service.Interfaces;
 using DepremSafe.Service.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,32 +10,41 @@ namespace DepremSafe.API.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly UserService _userService;
-        public UserController(UserService userService) => _userService = userService;
+        private readonly IUserService _userService;
+        public UserController(IUserService userService) => _userService = userService;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _userService.GetAllAsync());
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(Guid id) => Ok(await _userService.GetByIdAsync(id));
-
-        [HttpPost]
-        public async Task<IActionResult> Create(User user)
+        public async Task<ActionResult<List<UserDTO>>> GetAll()
         {
-            await _userService.AddAsync(user);
-            return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
+            var users = await _userService.GetAllAsync();
+            return Ok(users);
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Guid id, User user)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDTO>> GetById(Guid id)
         {
-            if (id != user.Id) return BadRequest();
-            await _userService.UpdateAsync(user);
+            var user = await _userService.GetByIdAsync(id);
+            if (user == null)
+                return NotFound();
+            return Ok(user);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Create([FromBody] UserDTO userDto)
+        {
+            await _userService.AddAsync(userDto);
+            return CreatedAtAction(nameof(GetById), new { id = userDto.Id }, userDto);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> Update([FromBody] UserDTO userDto)
+        {
+            await _userService.UpdateAsync(userDto);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id)
         {
             await _userService.DeleteAsync(id);
             return NoContent();

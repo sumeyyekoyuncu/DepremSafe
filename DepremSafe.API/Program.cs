@@ -1,8 +1,13 @@
+using System.Text.Json.Serialization;
 using DepremSafe.Core.Interfaces;
+using DepremSafe.Core.Mapping;
 using DepremSafe.Data.Context;
 using DepremSafe.Data.Repositories;
+using DepremSafe.Service.Interfaces;
 using DepremSafe.Service.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.SqlServer;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,16 +15,22 @@ builder.Services.AddControllersWithViews();
 
 
 builder.Services.AddDbContext<DepremSafeDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserLocationRepository, UserLocationRepository>();
 builder.Services.AddScoped<IEarthquakeRepository, EarthquakeRepository>();
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Sonsuz döngü tespit edildiðinde döngüdeki referanslarý görmezden gel.
+        // Bu, döngüdeki ikinci User nesnesinin null olarak serileþtirilmesini saðlar.
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 
-
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<UserLocationService>();
-builder.Services.AddScoped<EarthquakeService>();
-
+builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<IUserLocationService,UserLocationService>();
+builder.Services.AddScoped<IEarthquakeService,EarthquakeService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

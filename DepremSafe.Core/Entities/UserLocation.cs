@@ -10,6 +10,7 @@ namespace DepremSafe.Core.Entities
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid UserId { get; set; }
+        public string City { get; set; } //şehir
         public double Latitude { get; set; } //enlem
         public double Longitude { get; set; } //boylam
         public DateTime Timestamp { get; set; } = DateTime.UtcNow; //en son konumun alındığı zaman

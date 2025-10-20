@@ -26,7 +26,8 @@ namespace DepremSafe.Data.Context
             if (!optionsBuilder.IsConfigured)
             {
                 // Design-time veya parameterless constructor kullanıldığında çalışır
-                optionsBuilder.UseNpgsql("Server=localhost;Port=5432;Database=DepremSafeDb;Username=postgres;Password=123456");
+                optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=DepremSafeDB;Trusted_Connection=True;");
+
             }
         }
 

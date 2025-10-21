@@ -5,6 +5,8 @@ using DepremSafe.Data.Context;
 using DepremSafe.Data.Repositories;
 using DepremSafe.Service.Interfaces;
 using DepremSafe.Service.Services;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,20 @@ builder.Services.AddControllers()
         // Bu, döngüdeki ikinci User nesnesinin null olarak serileþtirilmesini saðlar.
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+builder.Services.AddHangfire(config =>
+{
+    config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"),
+        new SqlServerStorageOptions
+        {
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            QueuePollInterval = TimeSpan.Zero,
+            UseRecommendedIsolationLevel = true,
+            DisableGlobalLocks = true
+        });
+});
+builder.Services.AddHangfireServer();
+
 
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IUserLocationService,UserLocationService>();
@@ -39,7 +55,10 @@ builder.Services.AddSingleton<IFcmService>(sp =>
     new FcmService(sp.GetRequiredService<HttpClient>(), "depremsafe-9f4ce-firebase-adminsdk-fbsvc-213915976c.json"));
 
 var app = builder.Build();
-
+app.UseHangfireDashboard("/hangfire");
+RecurringJob.AddOrUpdate<IEarthquakeService>(
+    service => service.CheckAndNotifyLatestEarthquakeAsync(),
+    "*/3 * * * *"); // cron: her 5 dakika
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

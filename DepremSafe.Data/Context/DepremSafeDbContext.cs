@@ -61,6 +61,7 @@ namespace DepremSafe.Data.Context
             modelBuilder.Entity<Earthquake>()
                 .HasIndex(e => e.EventId)
                 .IsUnique();
+            modelBuilder.Entity<City>().HasNoKey();
         }
     }
     }

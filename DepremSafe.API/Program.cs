@@ -33,7 +33,9 @@ builder.Services.AddScoped<IUserLocationService,UserLocationService>();
 builder.Services.AddScoped<IEarthquakeService,EarthquakeService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddHttpClient<IFcmService, FcmService>(client => { });
+builder.Services.AddSingleton<IFcmService>(sp =>
+    new FcmService(sp.GetRequiredService<HttpClient>(), "BEmPwDNQspj6qs0lRnV2CVnyg_Qpt0QwbYySqQi-XyYcCwWzQUOvLnNVf0Kfa8U2GNiBJ6iNu3_ZRSOUZvlML2Y"));
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())

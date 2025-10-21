@@ -9,6 +9,8 @@ namespace DepremSafe.Service.Interfaces
 {
     public interface IUserService
     {
+
+        //selam
         Task<List<UserDTO>> GetAllAsync();
         Task<UserDTO?> GetByIdAsync(Guid id);
         Task AddAsync(UserDTO userDto);

@@ -69,62 +69,88 @@ namespace DepremSafe.Service.Services
         }
         public async Task CheckAndNotifyLatestEarthquakeAsync()
         {
-            // 1️⃣ Kandilli/Orhan Aydoğdu API'den deprem verisi çek
-            var url = "https://api.orhanaydogdu.com.tr/deprem";
-            var response = await _httpClient.GetStringAsync(url);
-            var allDeprems = JsonSerializer.Deserialize<List<EarthquakeDTO>>(response);
-
-            // 2️⃣ 5.0+ en son depremi bul
-            var latestDeprem = allDeprems
-                .Where(d => d.Magnitude >= 5.0)
-                .OrderByDescending(d => d.OccurredAt)
-                .FirstOrDefault();
-
-            if (latestDeprem == null)
+            try
             {
-                Console.WriteLine("5.0+ deprem yok.");
-                return;
-            }
+                var url = "https://api.orhanaydogdu.com.tr/deprem";
+                var response = await _httpClient.GetStringAsync(url);
 
-            Console.WriteLine($"Son deprem: {latestDeprem.Magnitude} şiddetinde, {latestDeprem.Location}");
-
-            // 3️⃣ En yakın 10 şehri bul
-            var allCities = _dbContext.Cities.ToList();
-            var nearestCities = GetNearest10Cities(latestDeprem.Latitude, latestDeprem.Longitude, allCities);
-
-            // 4️⃣ Bu şehirlerdeki kullanıcıları seç
-            var usersToNotify = _dbContext.Users
-                .Where(u => nearestCities.Select(c => c.Name).Contains(u.City))
-                .ToList();
-
-            // 5️⃣ FCM ile bildirim gönder
-            foreach (var user in usersToNotify)
-            {
-                try
+                if (string.IsNullOrWhiteSpace(response))
                 {
-                    await _fcmService.SendNotificationAsync(user.FcmToken,
-                        "Deprem oldu!",
-                        $"Bölgenizde {latestDeprem.Magnitude} büyüklüğünde bir deprem meydana geldi. Güvende misiniz?");
+                    Console.WriteLine("Deprem API’den boş response geldi.");
+                    return;
                 }
-                catch (Exception ex)
+
+                var options = new JsonSerializerOptions
                 {
-                    Console.WriteLine($"Bildirim gönderilemedi: {user.City} - {ex.Message}");
+                    PropertyNameCaseInsensitive = true
+                };
+
+                // JSON structure: { "result": [ {...}, {...} ] }
+                var apiResponse = JsonSerializer.Deserialize<EarthquakeApiResponse>(response, options);
+                var allDeprems = apiResponse?.Result;
+
+                if (allDeprems == null || !allDeprems.Any())
+                {
+                    Console.WriteLine("Deprem listesi boş veya deserialize edilemedi.");
+                    return;
                 }
+
+                // 5.0+ en son depremi bul
+                var latestDeprem = allDeprems
+                    .Where(d => d.Magnitude >= 5.0)
+                    .OrderByDescending(d => d.OccurredAt)
+                    .FirstOrDefault();
+
+                if (latestDeprem == null)
+                {
+                    Console.WriteLine("5.0+ deprem yok.");
+                    return;
+                }
+
+                Console.WriteLine($"Son deprem: {latestDeprem.Magnitude} şiddetinde, {latestDeprem.Location}");
+
+                // En yakın 10 şehri bul
+                var allCities = _dbContext.Cities.ToList();
+                var nearestCities = GetNearest10Cities(latestDeprem.Latitude, latestDeprem.Longitude, allCities);
+
+                // Bu şehirlerdeki kullanıcıları seç
+                var usersToNotify = _dbContext.Users
+                    .Where(u => nearestCities.Select(c => c.Name).Contains(u.City))
+                    .ToList();
+
+                // FCM ile bildirim gönder
+                foreach (var user in usersToNotify)
+                {
+                    try
+                    {
+                        await _fcmService.SendNotificationAsync(user.FcmToken,
+                            "Deprem oldu!",
+                            $"Bölgenizde {latestDeprem.Magnitude} büyüklüğünde bir deprem meydana geldi. Güvende misiniz?");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Bildirim gönderilemedi: {user.City} - {ex.Message}");
+                    }
+                }
+
+                // Deprem kaydını veritabanına ekle
+                _dbContext.Earthquakes.Add(new Earthquake
+                {
+                    Latitude = latestDeprem.Latitude,
+                    Longitude = latestDeprem.Longitude,
+                    Magnitude = latestDeprem.Magnitude,
+                    OccurredAt = latestDeprem.OccurredAt,
+                    Location = latestDeprem.Location
+                });
+
+                await _dbContext.SaveChangesAsync();
             }
-
-            // 6️⃣ Deprem kaydını veritabanına ekle
-            _dbContext.Earthquakes.Add(new Earthquake
+            catch (Exception ex)
             {
-                Latitude = latestDeprem.Latitude,
-                Longitude = latestDeprem.Longitude,
-                Magnitude = latestDeprem.Magnitude,
-                OccurredAt = latestDeprem.OccurredAt,
-                Location = latestDeprem.Location
-            });
-
-            await _dbContext.SaveChangesAsync();
+                Console.WriteLine($"Deprem kontrol job’unda hata: {ex.Message}");
+            }
         }
 
 
-    }
+        }
 }

@@ -20,6 +20,7 @@ namespace DepremSafe.Data.Context
         public DbSet<User> Users { get; set; }
         public DbSet<UserLocation> UserLocations { get; set; }
         public DbSet<Earthquake> Earthquakes { get; set; }
+        public DbSet<City> Cities { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

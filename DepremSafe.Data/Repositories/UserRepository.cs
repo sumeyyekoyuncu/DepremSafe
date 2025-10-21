@@ -22,7 +22,7 @@ namespace DepremSafe.Data.Repositories
 
         public async Task<IEnumerable<User>> GetAllAsync() =>
             await _context.Users.Include(u => u.Locations).ToListAsync();
-
+        //sumeyye yagmur
         public async Task AddAsync(User user)
         {
             _context.Users.Add(user);

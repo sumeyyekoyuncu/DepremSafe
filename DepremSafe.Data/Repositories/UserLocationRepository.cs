@@ -18,7 +18,7 @@ namespace DepremSafe.Data.Repositories
         //merhaba deneme 
 
         public UserLocationRepository(DepremSafeDbContext context) => _context = context;
-
+       
         public async Task<UserLocation> GetByIdAsync(Guid id) =>
             await _context.UserLocations.Include(l => l.User).FirstOrDefaultAsync(l => l.Id == id);
 

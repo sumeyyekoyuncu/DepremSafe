@@ -3,19 +3,65 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
+using DepremSafe.Core.DTOs;
 using DepremSafe.Core.Entities;
 using DepremSafe.Core.Interfaces;
+using DepremSafe.Service.Interfaces;
 
 namespace DepremSafe.Service.Services
 {
-    public class UserService
+    public class UserService:IUserService
     {
         private readonly IUserRepository _userRepository;
-        public UserService(IUserRepository userRepository ) { _userRepository = userRepository; }
-        public Task<User> GetByIdAsync(Guid id) => _userRepository.GetByIdAsync(id);
-        public Task<IEnumerable<User>> GetAllAsync() => _userRepository.GetAllAsync();
-        public Task AddAsync(User user) => _userRepository.AddAsync(user);
-        public Task UpdateAsync(User user) => _userRepository.UpdateAsync(user);
-        public Task DeleteAsync(Guid id) => _userRepository.DeleteAsync(id);
+        private readonly IMapper _mapper;
+        public UserService(IUserRepository userRepository, IMapper mapper)
+        {
+            _userRepository = userRepository;
+           _mapper = mapper;
+        }
+        public async Task<List<UserDTO>> GetAllAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+            return _mapper.Map<List<UserDTO>>(users);
+        }
+        public async Task<UserDTO?> GetByIdAsync(Guid id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            return user == null ? null : _mapper.Map<UserDTO>(user);
+        }
+        public async Task AddAsync(UserDTO userDto)
+        {
+            // User entity'ye map et
+            var user = _mapper.Map<User>(userDto);
+
+            // Burada navigation property kullanarak otomatik lokasyon ekle
+            var location = new UserLocation
+            {
+                City = user.City,      // User'ın şehir bilgisini al
+                Latitude = 0.0,        // varsayılan veya başlangıç değerleri
+                Longitude = 0.0,
+                Source = "Default",    // otomatik kaynak
+                User = user            // navigation property ile ilişkilendir
+            };
+
+            user.Locations = new List<UserLocation> { location };
+
+            // User ve ilişkili UserLocation aynı anda eklenir
+            await _userRepository.AddAsync(user);
+        }
+
+        public async Task UpdateAsync(UserDTO userDto)
+        {
+            var user = _mapper.Map<User>(userDto);
+            await _userRepository.UpdateAsync(user);
+        }
+
+        public async Task DeleteAsync(Guid id)
+        {
+            await _userRepository.DeleteAsync(id);
+        }
+
+        
     }
 }

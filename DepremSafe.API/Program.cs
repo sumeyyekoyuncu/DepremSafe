@@ -21,6 +21,8 @@ builder.Services.AddDbContext<DepremSafeDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserLocationRepository, UserLocationRepository>();
 builder.Services.AddScoped<IEarthquakeRepository, EarthquakeRepository>();
+
+builder.Services.AddHttpClient<IAiService, AiService>();
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

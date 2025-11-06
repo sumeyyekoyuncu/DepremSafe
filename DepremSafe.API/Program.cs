@@ -49,14 +49,26 @@ builder.Services.AddHangfireServer();
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IUserLocationService,UserLocationService>();
 builder.Services.AddScoped<IEarthquakeService,EarthquakeService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<IFcmService, FcmService>(client => { });
 builder.Services.AddHttpClient<IFcmService, FcmService>(client => { });
 builder.Services.AddSingleton<IFcmService>(sp =>
-    new FcmService(sp.GetRequiredService<HttpClient>(), "depremsafe-9f4ce-firebase-adminsdk-fbsvc-213915976c.json"));
+    new FcmService(sp.GetRequiredService<HttpClient>(), "depremsafe-firebasesdk.json"));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 app.UseHangfireDashboard("/hangfire");
 RecurringJob.AddOrUpdate<IEarthquakeService>(
     service => service.CheckAndNotifyLatestEarthquakeAsync(),

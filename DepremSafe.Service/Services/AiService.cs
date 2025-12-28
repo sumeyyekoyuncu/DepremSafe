@@ -70,7 +70,7 @@ namespace DepremSafe.Service.Services
                 chat_history = chatHistory,
                 temperature = 0.7,
                 max_tokens = 150,
-                preamble = "Sen empatik, destekleyici bir deprem kriz asistanısın. Kısa ve öz konuşursun."
+                preamble = "Sen empatik, destekleyici bir deprem kriz asistanısın. Kısa ve öz konuşursun.Kullanıcı enkaz altında ise sadece evet hayır cevapları verebilir sorularını buna göre sor."
             };
 
             var content = new StringContent(

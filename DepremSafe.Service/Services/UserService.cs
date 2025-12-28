@@ -7,7 +7,9 @@ using AutoMapper;
 using DepremSafe.Core.DTOs;
 using DepremSafe.Core.Entities;
 using DepremSafe.Core.Interfaces;
+using DepremSafe.Data.Context;
 using DepremSafe.Service.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace DepremSafe.Service.Services
 {
@@ -15,10 +17,12 @@ namespace DepremSafe.Service.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
-        public UserService(IUserRepository userRepository, IMapper mapper)
+        private readonly DepremSafeDbContext _context;
+        public UserService(IUserRepository userRepository, IMapper mapper,DepremSafeDbContext context)
         {
             _userRepository = userRepository;
            _mapper = mapper;
+            _context = context;
         }
         public async Task<List<UserDTO>> GetAllAsync()
         {
@@ -61,7 +65,42 @@ namespace DepremSafe.Service.Services
         {
             await _userRepository.DeleteAsync(id);
         }
+        public async Task<User?> GetByEmail(string email)
+        {
+            return await _context.Users
+                .FirstOrDefaultAsync(x => x.Email == email);
+        }
+       
+       public async Task<User> CreateGoogleUser(string email, string name, string googleId)
+        {
+            var user = new User
+            {
+                Email = email,
+                Username = name,
+                GoogleId = googleId,
+                LoginProvider = "Google",
+                IsSafe = true,
+                LastUpdated = DateTime.UtcNow
+            };
 
-        
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            return user;
+        }
+        public async Task UpdateCityAsync(Guid userId, string city)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            user.City = city;
+            user.LastUpdated = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+
+
     }
 }

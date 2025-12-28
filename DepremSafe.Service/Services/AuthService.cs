@@ -43,5 +43,16 @@ namespace DepremSafe.Service.Services
             }
         
     }
+        public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string idToken)
+        {
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
+            {
+                Audience = new[] { "367485352063-33pbhnolq0jkgo1qqkj1fia4qpavfoi0.apps.googleusercontent.com" }
+            };
+
+            var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+            return payload;
+        }
+
     }
 }

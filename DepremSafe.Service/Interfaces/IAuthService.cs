@@ -11,5 +11,6 @@ namespace DepremSafe.Service.Interfaces
     public interface IAuthService
     {
         Task<FirebaseToken> VerifyFirebaseTokenAsync(string idToken);
+        Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string idToken);
     }
 }

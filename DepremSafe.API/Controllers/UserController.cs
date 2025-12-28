@@ -1,4 +1,5 @@
-﻿using DepremSafe.Core.DTOs;
+﻿using System.Security.Claims;
+using DepremSafe.Core.DTOs;
 using DepremSafe.Core.Entities;
 using DepremSafe.Service.Interfaces;
 using DepremSafe.Service.Services;
@@ -49,7 +50,16 @@ namespace DepremSafe.API.Controllers
             await _userService.DeleteAsync(id);
             return NoContent();
         }
+        [HttpPut("city")]
+        public async Task<IActionResult> UpdateCity(UpdateCityRequest request)
+        {
+            if (request.UserId == Guid.Empty || string.IsNullOrWhiteSpace(request.City))
+                return BadRequest("UserId ve City zorunlu");
 
+            await _userService.UpdateCityAsync(request.UserId, request.City);
+
+            return Ok(new { message = "City updated" });
+        }
 
     }
 }

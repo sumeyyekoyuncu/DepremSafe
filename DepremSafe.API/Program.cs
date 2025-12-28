@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using DepremSafe.Core.Interfaces;
 using DepremSafe.Core.Mapping;
@@ -7,9 +8,11 @@ using DepremSafe.Service.Interfaces;
 using DepremSafe.Service.Services;
 using Hangfire;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +52,27 @@ builder.Services.AddHangfireServer();
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IUserLocationService,UserLocationService>();
 builder.Services.AddScoped<IEarthquakeService,EarthquakeService>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+            )
+        };
+    });
+
+
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -90,7 +114,8 @@ else
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRouting();
 app.UseAuthorization();
 

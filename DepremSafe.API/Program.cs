@@ -6,6 +6,8 @@ using DepremSafe.Data.Context;
 using DepremSafe.Data.Repositories;
 using DepremSafe.Service.Interfaces;
 using DepremSafe.Service.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -17,6 +19,10 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("depremsafe-firebasesdk.json")
+});
 
 
 builder.Services.AddDbContext<DepremSafeDbContext>(options =>
@@ -24,6 +30,7 @@ builder.Services.AddDbContext<DepremSafeDbContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserLocationRepository, UserLocationRepository>();
 builder.Services.AddScoped<IEarthquakeRepository, EarthquakeRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddHttpClient<IAiService, AiService>();
 builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());

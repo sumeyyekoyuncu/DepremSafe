@@ -73,7 +73,7 @@ DepremSafe/
 
 ### Prerequisites
 - [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- SQL Server or PostgreSQL
+- SQL Server 
 - Firebase project (for FCM notifications)
 
 ### Run Locally

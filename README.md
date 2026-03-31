@@ -1,89 +1,97 @@
-# 🌍 DepremSafe
+# DepremSafe Backend
 
-DepremSafe is a backend API built with **ASP.NET Core** that provides earthquake safety features including real-time earthquake data, location-based alerts, push notifications, and an AI-powered chat assistant.
-
----
-
-## 🚀 Features
-
-- 🔐 **Authentication** — JWT-based auth with Google OAuth2 support
-- 🌐 **Real-time Earthquake Data** — Fetches and serves live earthquake information
-- 📍 **User Location Tracking** — Stores and manages user locations for proximity-based alerts
-- 🔔 **Push Notifications** — FCM (Firebase Cloud Messaging) integration for earthquake alerts
-- 🛡️ **Safety Reports** — Users can submit and view safety status reports
-- 🤖 **AI Assistant** — Chat-based assistant powered by AI for earthquake guidance
-- 📡 **Mesh Network Support** — When internet connectivity is lost, devices form a mesh network to relay location data between users
+A REST API built with ASP.NET Core that delivers earthquake safety infrastructure — real-time seismic data, proximity-based push alerts, user safety reporting, and an AI-powered guidance assistant. Designed to remain partially functional even when internet connectivity is unavailable through mesh network support.
 
 ---
 
-## 🏗️ Architecture
+## Features
 
-The project follows an **N-Layer Architecture**:
+| Domain | Capabilities |
+|---|---|
+| **Authentication** | JWT-based auth with Google OAuth2 social login |
+| **Earthquake Data** | Fetches and serves live seismic event information |
+| **Location Tracking** | Stores and manages user locations for proximity-based alerting |
+| **Push Notifications** | Firebase Cloud Messaging (FCM) integration for real-time earthquake alerts |
+| **Safety Reports** | Users can submit and query post-earthquake safety status |
+| **AI Assistant** | Chat-based guidance assistant powered by AI for earthquake preparedness and response |
+| **Mesh Network** | When internet is unavailable, devices form a local mesh network to relay location data between users |
+
+---
+
+## Architecture
+
+DepremSafe follows an **N-Layer Architecture**, separating concerns across four distinct layers:
 
 ```
 DepremSafe/
-├── DepremSafe.API          # Controllers, entry point
-├── DepremSafe.Core         # Entities, DTOs, Interfaces (no external dependencies)
-├── DepremSafe.Service      # Business logic
-└── DepremSafe.Data         # Database access, repositories
+├── DepremSafe.API      # HTTP controllers and application entry point
+├── DepremSafe.Core     # Entities, DTOs, and interfaces (no external dependencies)
+├── DepremSafe.Service  # Business logic and use case orchestration
+└── DepremSafe.Data     # Repository implementations and database access
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Technology | Purpose |
 |---|---|
 | ASP.NET Core | Web API framework |
-| Entity Framework Core | ORM / Database access |
-| JWT | Authentication & authorization |
+| Entity Framework Core | ORM and database access |
+| SQL Server | Relational data store |
+| JWT | Authentication and authorization |
 | Google OAuth2 | Social login |
-| Firebase FCM | Push notifications |
-| AI Integration | Chat assistant (AiService) |
+| Firebase FCM | Push notification delivery |
+| AI Integration | Chat assistant via `AiService` |
 
 ---
 
-## 📦 Entities
+## Domain Model
 
 | Entity | Description |
 |---|---|
-| `User` | Application user |
-| `Earthquake` | Earthquake event data |
-| `City` | City information for location mapping |
-| `UserLocation` | User's stored location |
-| `SafetyReport` | User-submitted safety status after an earthquake |
+| `User` | Application user account |
+| `Earthquake` | Seismic event record with magnitude, location, and timestamp |
+| `City` | City data used for location mapping and regional alerts |
+| `UserLocation` | User's stored geographic position |
+| `SafetyReport` | User-submitted safety status following an earthquake event |
 
 ---
 
-## 📡 API Endpoints
+## API Reference
 
-| Controller | Description |
+| Controller | Endpoints |
 |---|---|
-| `/api/auth` | Register, login, Google OAuth |
-| `/api/earthquakes` | List and query earthquake events |
-| `/api/userlocations` | Manage user location data |
+| `/api/auth` | Register, login, Google OAuth2 callback |
+| `/api/earthquakes` | List and query seismic events |
+| `/api/userlocations` | Create, update, and retrieve user location data |
 | `/api/notification` | Send and manage push notifications |
 | `/api/safety` | Submit and retrieve safety reports |
-| `/api/ai` | AI chat assistant |
+| `/api/ai` | AI assistant chat interface |
 | `/api/user` | User profile management |
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download)
-- SQL Server 
-- Firebase project (for FCM notifications)
 
-### Run Locally
+- [.NET 8 SDK](https://dotnet.microsoft.com/download)
+- SQL Server instance (local or remote)
+- Firebase project with FCM enabled
+
+### Local Setup
+
+**1. Clone the repository**
 
 ```bash
 git clone https://github.com/sumeyyekoyuncu/DepremSafe.git
 cd DepremSafe
 ```
 
-Update `appsettings.json` with your configuration:
+**2. Configure the application**
+
+Update `appsettings.json` with your environment values:
 
 ```json
 {
@@ -94,14 +102,14 @@ Update `appsettings.json` with your configuration:
     "SecretKey": "your_secret_key"
   },
   "Firebase": {
-    "ServerKey": "your_fcm_key"
+    "ServerKey": "your_fcm_server_key"
   }
 }
 ```
+
+**3. Restore and run**
 
 ```bash
 dotnet restore
 dotnet run --project DepremSafe.API
 ```
-
----

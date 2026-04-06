@@ -1,4 +1,5 @@
 # DepremSafe Backend
+![CI](https://github.com/sumeyyekoyuncu/DepremSafe/actions/workflows/ci.yml/badge.svg)
 
 A REST API built with ASP.NET Core that delivers earthquake safety infrastructure — real-time seismic data, proximity-based push alerts, user safety reporting, and an AI-powered guidance assistant. Designed to remain partially functional even when internet connectivity is unavailable through mesh network support.
 

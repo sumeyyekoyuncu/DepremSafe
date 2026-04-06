@@ -1,4 +1,5 @@
 # DepremSafe Backend
+
 ![CI](https://github.com/sumeyyekoyuncu/DepremSafe/actions/workflows/ci.yml/badge.svg)
 
 A REST API built with ASP.NET Core that delivers earthquake safety infrastructure — real-time seismic data, proximity-based push alerts, user safety reporting, and an AI-powered guidance assistant. Designed to remain partially functional even when internet connectivity is unavailable through mesh network support.
@@ -44,6 +45,8 @@ DepremSafe/
 | Google OAuth2 | Social login |
 | Firebase FCM | Push notification delivery |
 | AI Integration | Chat assistant via `AiService` |
+| xUnit | Unit testing |
+| GitHub Actions | CI pipeline — build and test on every push |
 
 ---
 
@@ -97,10 +100,12 @@ Update `appsettings.json` with your environment values:
 ```json
 {
   "ConnectionStrings": {
-    "Default": "your_connection_string"
+    "DefaultConnection": "Server=localhost;Database=depremsafe;Trusted_Connection=True;"
   },
-  "JwtSettings": {
-    "SecretKey": "your_secret_key"
+  "Jwt": {
+    "Key": "your_secret_key",
+    "Issuer": "DepremSafeAPI",
+    "Audience": "DepremSafeClient"
   },
   "Firebase": {
     "ServerKey": "your_fcm_server_key"
@@ -108,9 +113,20 @@ Update `appsettings.json` with your environment values:
 }
 ```
 
-**3. Restore and run**
+**3. Restore, migrate, and run**
 
 ```bash
 dotnet restore
+dotnet ef database update --project DepremSafe.Data --startup-project DepremSafe.API
 dotnet run --project DepremSafe.API
 ```
+
+---
+
+## Running Tests
+
+```bash
+dotnet test
+```
+
+Unit tests cover core business logic including seismic distance calculations and proximity-based city detection — the most critical algorithms in a real-time earthquake alert system.
